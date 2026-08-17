@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WordRush</title>
+<!-- All visual styling lives in style.css, see that file for comments on
+     colors, layout, and each screen's look. -->
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- Page title, shown above every screen at all times. -->
+    <header>
+      <p class="eyebrow">30-Second Sprint</p>
+      <h1>WordRush</h1>
+      <p class="subtitle">Pick a mode. Type until time runs out.</p>
+    </header>
+
+    <!-- HOME SCREEN
+         Visible before a round starts, and again after clicking "Home"
+         from the game over screen. Lets the player set a name and pick a
+         mode, then start a round. Starts visible by default (no "hidden"
+         class), the playing and game over screens below start hidden. -->
+    <section id="screen-idle" class="card">
+      <p class="label">Enter a name for the leaderboard</p>
+      <!-- script.js keeps state.username in sync with this field as the
+           player types. -->
+      <input id="username-input" type="text" maxlength="16" placeholder="Player" />
+
+      <p class="label">Mode</p>
+      <!-- Two mode buttons. Each one's data-mode attribute is read by
+           script.js (btn.dataset.mode) to know which mode to switch to
+           when clicked. The "active" class marks whichever one is
+           currently selected, script.js moves this class between them. -->
+      <div class="difficulty-buttons" id="mode-buttons">
+        <button data-mode="words" class="diff-btn active">Words</button>
+        <button data-mode="essay" class="diff-btn">Essay</button>
+      </div>
+      <!-- Filled in by script.js (from the MODE_DESC lookup) with a short
+           description of whichever mode is currently selected. -->
+      <p id="mode-desc" class="hint"></p>
+
+      <button id="start-btn" class="btn-primary">Start Game</button>
+      <!-- Filled in by script.js with the player's saved personal best
+           from localStorage, left empty if they do not have one yet. -->
+      <p id="personal-best" class="hint mono"></p>
+    </section>
+
+    <!-- PLAYING SCREEN
+         Visible only while a round is actively running, script.js
+         un-hides this and hides screen-idle when "Start Game" or
+         "Play Again" is clicked. -->
+    <section id="screen-playing" class="card hidden">
+
+      <!-- Live stats, updated every relevant keystroke and every second
+           by updateStatsDisplay() in script.js. -->
+      <div class="stats-row mono">
+        <span>Score <b id="stat-score">0</b></span>
+        <span id="stat-timer" class="timer">30s</span>
+        <span>Acc <b id="stat-accuracy">100%</b></span>
+        <span>Streak <b id="stat-streak">0</b></span>
+      </div>
+
+      <!-- Words mode display: one small tile per letter of the current
+           word, built and colored by renderWordTiles() in script.js.
+           Hidden whenever Essay mode is active. -->
+      <div id="tiles" class="tiles"></div>
+
+      <!-- Essay mode display: the scrolling paragraph of text to type,
+           built and colored by renderEssayWindow() in script.js. Hidden
+           whenever Words mode is active. Starts with the "hidden" class
+           here in the markup since Words mode is selected by default. -->
+      <p id="essay-text" class="essay-text mono hidden"></p>
+
+      <!-- The single text field used for typing in both modes. Words
+           mode reads normal typed text from it, Essay mode instead reads
+           keydown events directly and keeps this field's value forcibly
+           empty (see handleEssayKeyDown in script.js for why). -->
+      <input id="game-input" class="game-input" autocomplete="off" spellcheck="false" />
+
+      <button id="quit-btn" class="btn-quit">Quit to Home</button>
+    </section>
+
+    <!-- GAME OVER SCREEN
+         Visible once the timer hits zero. script.js fills in the three
+         result numbers and the best streak line, then submits the score
+         to Supabase and refreshes the leaderboard below. -->
+    <section id="screen-gameover" class="card hidden">
+      <p class="label">Game Over</p>
+      <div class="results-grid mono">
+        <div><span id="result-score">0</span><small>Score</small></div>
+        <div><span id="result-wpm">0</span><small>WPM</small></div>
+        <div><span id="result-accuracy">0%</span><small>Accuracy</small></div>
+      </div>
+      <p id="result-streak" class="hint mono"></p>
+      <div class="button-row">
+        <!-- Reuses the same startGame() function as the initial
+             "Start Game" button, just immediately begins a fresh round
+             in whichever mode is still selected. -->
+        <button id="play-again-btn" class="btn-primary">Play Again</button>
+        <button id="home-btn" class="btn-secondary">Home</button>
+      </div>
+    </section>
+
+    <!-- LEADERBOARD
+         Always visible, regardless of which screen above is showing, so
+         the player can check standings any time. Filled in by
+         renderLeaderboard() in script.js, using data pulled from
+         Supabase (or a "connect Supabase" message if it is not
+         configured yet). -->
+    <section class="card">
+      <p class="label">Leaderboard</p>
+      <div id="leaderboard-list" class="mono"></div>
+    </section>
+
+  </div>
+
+  <!-- Supabase's client library, loaded from a CDN. Provides the global
+       window.supabase object that script.js checks for and uses to talk
+       to the "scores" table. -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- All of the game's actual logic, see script.js for a full
+       explanation of every function. Loaded last so every element above
+       already exists in the DOM by the time it runs. -->
+  <script src="script.js"></script>
+</body>
+</html>
